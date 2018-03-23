@@ -85,11 +85,19 @@ class MailerIntegration extends AbstractIntegration
 
     public function setIntegrationSettings(Integration $settings)
     {
-        if (!$settings->isPublished()) {
-            $this->restoreMailer();
-        } else {
-            $this->overrideMailer();
+        $requestData = $this->request->request->all();
+
+        if (!empty($requestData) && isset($requestData['integration_details']['isPublished'])) {
+            $published = $requestData['integration_details']['isPublished'];
+            $sendImmediately = $requestData['integration_details']['apiKeys']['template_method'];
+
+            if ($published == 1 && $sendImmediately == 1) {
+                $this->overrideMailer();
+            } else {
+                $this->restoreMailer();
+            }
         }
+
         parent::setIntegrationSettings($settings);
     }
 
