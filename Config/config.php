@@ -1,34 +1,27 @@
 <?php
 
 return [
-    'name'        => 'Google Authenticator',
-    'description' => 'Two-Factor authentication for Mautic.',
-    'version'     => '1.0',
+    'name'        => 'Mailer Filter',
+    'description' => 'Filter sending of messages on Mautic.',
+    'version'     => '1.1.3',
     'author'      => 'Henrique Rodrigues',
     'routes'      => [
-        'main' => [
-            'mautic_gauth_test' => [
-                'path'       => '/gauth',
-                'controller' => 'MauticAuthBundle:Auth:auth',
-            ]
-        ]
     ],
     'services' => [
         'events' => [
-            'mautic.auth.subscriber.user_bundle' => [
-                'class'     => 'MauticPlugin\MauticAuthBundle\EventListener\UserSubscriber',
+            'mautic.mailer.subscriber.form_bundle' => [
+                'class'     => 'MauticPlugin\MauticMailerBundle\EventListener\FormSubscriber',
                 'arguments' => [
-                    'router',
-                    'mautic.security',
-                    'mautic.helper.integration'
+                    'mautic.helper.integration',
+                    'mautic.helper.mailer'
                 ]
             ]
         ],
         'integrations' => [
-            'mautic.integration.auth' => [
-                'class'     => \MauticPlugin\MauticAuthBundle\Integration\AuthIntegration::class,
+            'mautic.integration.mailer' => [
+                'class'     => \MauticPlugin\MauticMailerBundle\Integration\MailerIntegration::class,
                 'arguments' => [
-                    'mautic.helper.user'
+
                 ],
             ]
         ]
