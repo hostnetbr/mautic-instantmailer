@@ -116,4 +116,23 @@ class MailerIntegration extends AbstractIntegration
             $this->pathsHelper->getSystemPath('app', true) . self::SYSTEM_MAILER
         );
     }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param $section
+     *
+     * @return string|array
+     */
+    public function getFormNotes($section)
+    {
+        if ('custom' === $section) {
+            return [
+                'template'   => 'MauticMailerBundle:Integration:form.html.php',
+                'parameters' => [],
+            ];
+        }
+
+        return parent::getFormNotes($section);
+    }
 }
