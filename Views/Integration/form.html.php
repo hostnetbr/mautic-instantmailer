@@ -1,5 +1,5 @@
 <div class="well well-sm" style="margin-bottom:0 !important;">
     <div class="alert alert-warning">
-        Don't remove the plugin folder without deactivating it first.
+        <?=$view['translator']->trans('mautic.integration.mailer.warning');?>
     </div>
 </div>

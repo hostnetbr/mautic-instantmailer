@@ -64,10 +64,10 @@ class MailerIntegration extends AbstractIntegration
                 'template_method',
                 'yesno_button_group',
                 [
-                    'label' => 'Send template emails immediately?',
+                    'label' => 'mautic.integration.mailer.config_label',
                     'data' => $this->getTemplateMethod(),
                     'attr'  => [
-                        'tooltip' => 'Segment emails are not affected by this setting',
+                        'tooltip' => 'mautic.integration.mailer.config_tooltip',
                     ],
                 ]
             );
