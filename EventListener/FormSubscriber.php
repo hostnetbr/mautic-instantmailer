@@ -61,18 +61,15 @@ class FormSubscriber extends CommonSubscriber
                 && $this->integration->getTemplateMethod()
                 && $emailType === 'template'
             ) {
-                if (!$entity) {
-                    $entity = new Email();
-                    $entity->setSessionId('new_'.hash('sha1', uniqid(mt_rand())));
-                    $entity->setSubject($this->replaceTokens($event->getSubject(), $event->getTokens()));
-                    $entity->setCustomHtml($event->getContent(true));
-                }
+                $entity = new Email();
+                $entity->setSessionId('new_'.hash('sha1', uniqid(mt_rand())));
+                $entity->setSubject($this->replaceTokens($event->getSubject(), $event->getTokens()));
+                $entity->setCustomHtml($event->getContent(true));
 
                 $temporaryMailer = $this->mailer;
                 $temporaryMailer->setEmail($entity);
                 $temporaryMailer->setTo(
-                    $event->getLead()['email'],
-                    "{$event->getLead()['firstname']} {$event->getLead()['lastname']}"
+                    $event->getHelper()->message->getTo()
                 );
 
                 $temporaryMailer->send();
@@ -83,5 +80,12 @@ class FormSubscriber extends CommonSubscriber
     public function replaceTokens($message, $tokens)
     {
         return str_replace(array_keys($tokens), $tokens, $message);
+    }
+
+    public function kill()
+    {
+        echo "<pre>";
+        print_r(func_get_args());
+        exit;
     }
 }
