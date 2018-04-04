@@ -81,11 +81,4 @@ class FormSubscriber extends CommonSubscriber
     {
         return str_replace(array_keys($tokens), $tokens, $message);
     }
-
-    public function kill()
-    {
-        echo "<pre>";
-        print_r(func_get_args());
-        exit;
-    }
 }
