@@ -3,7 +3,7 @@
 return [
     'name'        => 'Mailer Filter',
     'description' => 'Filter sending of messages on Mautic.',
-    'version'     => '1.3.2',
+    'version'     => '1.3.3',
     'author'      => 'Henrique Rodrigues',
     'routes'      => [
     ],
