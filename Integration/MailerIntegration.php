@@ -85,9 +85,12 @@ class MailerIntegration extends AbstractIntegration
 
     public function setIntegrationSettings(Integration $settings)
     {
-        $requestData = $this->request->request->all();
+        $request = $this->request->request;
+        $requestData = empty($request) ? $request : $request->all();
 
-        if (!empty($requestData) && isset($requestData['integration_details']['isPublished'])) {
+        if (!empty($requestData)
+            && isset($requestData['integration_details']['isPublished'])
+        ) {
             $published = $requestData['integration_details']['isPublished'];
             $sendImmediately = $requestData['integration_details']['apiKeys']['template_method'];
 
