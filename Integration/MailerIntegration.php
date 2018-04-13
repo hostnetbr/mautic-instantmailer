@@ -85,8 +85,12 @@ class MailerIntegration extends AbstractIntegration
 
     public function setIntegrationSettings(Integration $settings)
     {
-        $request = $this->request->request;
-        $requestData = empty($request) ? $request : $request->all();
+        if (empty($this->request)) {
+            $requestData = $this->request;
+        } else {
+            $request = $this->request->request;
+            $requestData = empty($request) ? $request : $request->all();
+        }
 
         if (!empty($requestData)
             && isset($requestData['integration_details']['isPublished'])
