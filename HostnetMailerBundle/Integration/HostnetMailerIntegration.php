@@ -6,23 +6,22 @@
  *
  */
 
-namespace MauticPlugin\MauticMailerBundle\Integration;
+namespace MauticPlugin\HostnetMailerBundle\Integration;
 
 use Mautic\PluginBundle\Integration\AbstractIntegration;
 use Mautic\PluginBundle\Entity\Integration;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormBuilder;
 
-class MailerIntegration extends AbstractIntegration
+class HostnetMailerIntegration extends AbstractIntegration
 {
-
-    const MAILER = '/MauticMailerBundle/Helper/MailHelper.php';
-    const DEFAULT_MAILER = '/MauticMailerBundle/Helper/DefaultMailHelper.php';
+    const MAILER = '/HostnetMailerBundle/Helper/MailHelper.php';
+    const DEFAULT_MAILER = '/HostnetMailerBundle/Helper/DefaultMailHelper.php';
     const SYSTEM_MAILER = '/bundles/EmailBundle/Helper/MailHelper.php';
 
     public function getName()
     {
-        return 'Mailer';
+        return 'HostnetMailer';
     }
 
     public function getDisplayName()
@@ -135,7 +134,7 @@ class MailerIntegration extends AbstractIntegration
     {
         if ('custom' === $section) {
             return [
-                'template'   => 'MauticMailerBundle:Integration:form.html.php',
+                'template'   => 'HostnetMailerBundle:Integration:form.html.php',
                 'parameters' => [],
             ];
         }

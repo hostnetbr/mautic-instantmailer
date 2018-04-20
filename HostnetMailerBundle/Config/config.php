@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'name'        => 'Mailer Filter',
+    'name'        => 'Mailer Configuration',
     'description' => 'Filter sending of messages on Mautic.',
-    'version'     => '1.3.5',
+    'version'     => '2.0.0',
     'author'      => 'Henrique Rodrigues',
     'routes'      => [
     ],
     'services' => [
         'events' => [
-            'mautic.mailer.subscriber.form_bundle' => [
-                'class'     => \MauticPlugin\MauticMailerBundle\EventListener\FormSubscriber::class,
+            'plugin.hostnetmailer.formbundle.subscriber' => [
+                'class'     => \MauticPlugin\HostnetMailerBundle\EventListener\FormSubscriber::class,
                 'arguments' => [
                     'mautic.helper.integration',
                     'mautic.helper.mailer'
@@ -18,8 +18,8 @@ return [
             ]
         ],
         'integrations' => [
-            'mautic.integration.mailer' => [
-                'class'     => \MauticPlugin\MauticMailerBundle\Integration\MailerIntegration::class,
+            'mautic.integration.hostnetmailer' => [
+                'class'     => \MauticPlugin\HostnetMailerBundle\Integration\HostnetMailerIntegration::class,
                 'arguments' => [
 
                 ],

@@ -1,6 +1,6 @@
 <?php
 
-namespace MauticPlugin\MauticMailerBundle\EventListener;
+namespace MauticPlugin\HostnetMailerBundle\EventListener;
 
 use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
@@ -25,7 +25,7 @@ class FormSubscriber extends CommonSubscriber
         IntegrationHelper $integration,
         MailHelper $helper
     ) {
-        $this->integration = $integration->getIntegrationObject('Mailer');
+        $this->integration = $integration->getIntegrationObject('HostnetMailer');
         $this->mailer = $helper->getSampleMailer();
     }
 
