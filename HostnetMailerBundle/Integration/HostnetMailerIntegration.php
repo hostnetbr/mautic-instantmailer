@@ -97,7 +97,7 @@ class HostnetMailerIntegration extends AbstractIntegration
             $published = $requestData['integration_details']['isPublished'];
             $sendImmediately = $requestData['integration_details']['apiKeys']['template_method'];
 
-            if ($published == 1 && $sendImmediately == 1) {
+            if ($published == '1' && $sendImmediately == '1') {
                 $this->overrideMailer();
             } else {
                 $this->restoreMailer();
@@ -107,7 +107,7 @@ class HostnetMailerIntegration extends AbstractIntegration
         parent::setIntegrationSettings($settings);
     }
 
-    protected function restoreMailer()
+    public function restoreMailer()
     {
         copy(
             $this->pathsHelper->getSystemPath('plugins', true) . self::DEFAULT_MAILER,
@@ -115,7 +115,7 @@ class HostnetMailerIntegration extends AbstractIntegration
         );
     }
 
-    protected function overrideMailer()
+    public function overrideMailer()
     {
         copy(
             $this->pathsHelper->getSystemPath('plugins', true) . self::MAILER,

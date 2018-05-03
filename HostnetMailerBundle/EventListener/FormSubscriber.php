@@ -8,6 +8,8 @@ use Mautic\EmailBundle\EmailEvents;
 use Mautic\EmailBundle\Event\EmailSendEvent;
 use Mautic\EmailBundle\Helper\MailHelper;
 use Mautic\EmailBundle\Entity\Email;
+use Mautic\CoreBundle\CoreEvents;
+use Mautic\CoreBundle\Event\UpgradeEvent;
 
 /**
  * Class FormSubscriber
@@ -36,6 +38,7 @@ class FormSubscriber extends CommonSubscriber
     {
         return [
             EmailEvents::EMAIL_ON_SEND => ['onEmailSend', 0],
+            CoreEvents::POST_UPGRADE => ['onPostUpgrade', 0],
         ];
     }
 
@@ -71,9 +74,28 @@ class FormSubscriber extends CommonSubscriber
                 $temporaryMailer->setTo(
                     $event->getHelper()->message->getTo()
                 );
-
                 $temporaryMailer->send();
             }
+        }
+    }
+
+    /**
+     * Replaces de default mailer on system update
+     *
+     * @param GetResponseEvent $event
+     * @return void
+     */
+    public function onPostUpgrade(UpgradeEvent $event)
+    {
+        if (!$this->integration) {
+            return false;
+        }
+
+        $published = $this->integration->getIntegrationSettings()
+                ->getIsPublished();
+
+        if ($published && $this->integration->getTemplateMethod()) {
+            $this->integration->overrideMailer();
         }
     }
 
