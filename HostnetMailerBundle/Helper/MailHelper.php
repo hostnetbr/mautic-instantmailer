@@ -371,14 +371,6 @@ class MailHelper
                 // Generate tokens from listeners
                 if ($dispatchSendEvent) {
                     $this->dispatchSendEvent();
-
-                    $emailType = $this->email
-                        ? $this->email->getEmailType()
-                        : 'template';
-
-                    if ($emailType === 'template') {
-                        return true;
-                    }
                 }
 
                 // Queue an asset stat if applicable
@@ -508,6 +500,14 @@ class MailHelper
      */
     public function queue($dispatchSendEvent = false, $returnMode = self::QUEUE_RESET_TO)
     {
+        $emailType = $this->email
+            ? $this->email->getEmailType()
+            : 'template';
+
+        if ($emailType === 'template') {
+            return true;
+        }
+
         if ($this->tokenizationEnabled) {
             // Dispatch event to get custom tokens from listeners
             if ($dispatchSendEvent) {

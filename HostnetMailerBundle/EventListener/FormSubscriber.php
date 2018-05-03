@@ -45,7 +45,7 @@ class FormSubscriber extends CommonSubscriber
     /**
      * Captures the send event and defines if the message goes to the queue or is sent immediately
      *
-     * @param GetResponseEvent $event
+     * @param EmailSendEvent $event
      * @return void
      */
     public function onEmailSend(EmailSendEvent $event)
@@ -65,16 +65,16 @@ class FormSubscriber extends CommonSubscriber
                 && $emailType === 'template'
             ) {
                 $entity = new Email();
-                $entity->setSessionId('new_'.hash('sha1', uniqid(mt_rand())));
+                $id = 'new_'.hash('sha1', uniqid(mt_rand()));
+                $entity->setSessionId($id);
                 $entity->setSubject($this->replaceTokens($event->getSubject(), $event->getTokens()));
                 $entity->setCustomHtml($event->getContent(true));
 
-                $temporaryMailer = $this->mailer;
-                $temporaryMailer->setEmail($entity);
-                $temporaryMailer->setTo(
+                $this->mailer->setEmail($entity);
+                $this->mailer->setTo(
                     $event->getHelper()->message->getTo()
                 );
-                $temporaryMailer->send();
+                $this->mailer->send();
             }
         }
     }
