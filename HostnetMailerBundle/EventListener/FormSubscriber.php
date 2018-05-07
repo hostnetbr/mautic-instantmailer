@@ -71,9 +71,19 @@ class FormSubscriber extends CommonSubscriber
                 $entity->setCustomHtml($event->getContent(true));
 
                 $this->mailer->setEmail($entity);
+
                 $this->mailer->setTo(
                     $event->getHelper()->message->getTo()
                 );
+
+                $this->mailer->setCc(
+                    $event->getHelper()->message->getCc()
+                );
+
+                $this->mailer->setBcc(
+                    $event->getHelper()->message->getBcc()
+                );
+
                 $this->mailer->send();
             }
         }

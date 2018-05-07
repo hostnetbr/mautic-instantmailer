@@ -2,5 +2,5 @@
     <div class="alert alert-warning">
         <?=$view['translator']->trans('mautic.integration.mailer.warning');?>
     </div>
-    <div class="text-muted text-right small">v2.1.2</div>
+    <div class="text-muted text-right small"><?=$view['translator']->trans('mautic.integration.mailer.version');?></div>
 </div>
