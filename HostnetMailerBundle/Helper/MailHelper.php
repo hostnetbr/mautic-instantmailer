@@ -11,6 +11,7 @@
 
 namespace Mautic\EmailBundle\Helper;
 
+use Doctrine\ORM\ORMException;
 use Mautic\AssetBundle\Entity\Asset;
 use Mautic\CoreBundle\Factory\MauticFactory;
 use Mautic\CoreBundle\Helper\EmojiHelper;
@@ -371,14 +372,6 @@ class MailHelper
                 // Generate tokens from listeners
                 if ($dispatchSendEvent) {
                     $this->dispatchSendEvent();
-
-                    $emailType = $this->email
-                        ? $this->email->getEmailType()
-                        : 'template';
-
-                    if ($emailType === 'template') {
-                        return true;
-                    }
                 }
 
                 // Queue an asset stat if applicable
@@ -455,9 +448,18 @@ class MailHelper
             try {
                 $failures = [];
 
+                $emailType = $this->email
+                    ? $this->email->getEmailType()
+                    : 'template';
+
+                $this->mailer = $emailType === 'template'
+                    ? (self::getSampleMailer())->mailer
+                    : $this->mailer;
+
                 if (!$this->transport->isStarted()) {
                     $this->transportStartTime = time();
                 }
+
                 $this->mailer->send($this->message, $failures);
 
                 if (!empty($failures)) {
@@ -504,10 +506,11 @@ class MailHelper
      *                                  NOTHING_IF_FAILED  leaves the current errors array MauticMessage instance intact if it fails, otherwise reset_to
      *                                  RETURN_ERROR       return an array of [success, $errors]; only one applicable if message is queued
      *
-     * @return bool
+     * @return bool|array
      */
     public function queue($dispatchSendEvent = false, $returnMode = self::QUEUE_RESET_TO)
     {
+
         if ($this->tokenizationEnabled) {
             // Dispatch event to get custom tokens from listeners
             if ($dispatchSendEvent) {
@@ -553,11 +556,7 @@ class MailHelper
             // Assume success
             return (self::QUEUE_RETURN_ERRORS) ? [true, []] : true;
         } else {
-            $emailType = $this->email
-                ? $this->email->getEmailType()
-                : 'template';
-
-            $success = $emailType === 'template' ? true : $this->send($dispatchSendEvent);
+            $success = $this->send($dispatchSendEvent);
 
             // Reset the message for the next
             $this->queuedRecipients = [];
@@ -1807,9 +1806,7 @@ class MailHelper
      * @param string|null $emailAddress
      * @param null        $listId
      *
-     * @return Stat|void
-     *
-     * @throws \Doctrine\ORM\ORMException
+     * @return Stat
      */
     public function createEmailStat($persist = true, $emailAddress = null, $listId = null)
     {
@@ -1820,7 +1817,11 @@ class MailHelper
 
         // Note if a lead
         if (null !== $this->lead) {
-            $stat->setLead($this->factory->getEntityManager()->getReference('MauticLeadBundle:Lead', $this->lead['id']));
+            try {
+                $stat->setLead($this->factory->getEntityManager()->getReference('MauticLeadBundle:Lead', $this->lead['id']));
+            } catch (ORMException $exception) {
+                // keep IDE happy
+            }
             $emailAddress = $this->lead['email'];
         }
 
@@ -1838,7 +1839,11 @@ class MailHelper
 
         // Note if sent from a lead list
         if (null !== $listId) {
-            $stat->setList($this->factory->getEntityManager()->getReference('MauticLeadBundle:LeadList', $listId));
+            try {
+                $stat->setList($this->factory->getEntityManager()->getReference('MauticLeadBundle:LeadList', $listId));
+            } catch (ORMException $exception) {
+                // keep IDE happy
+            }
         }
 
         $stat->setTrackingHash($this->idHash);
@@ -1874,7 +1879,11 @@ class MailHelper
         }
 
         if (isset($this->copies[$id])) {
-            $stat->setStoredCopy($this->factory->getEntityManager()->getReference('MauticEmailBundle:Copy', $this->copies[$id]));
+            try {
+                $stat->setStoredCopy($this->factory->getEntityManager()->getReference('MauticEmailBundle:Copy', $this->copies[$id]));
+            } catch (ORMException $exception) {
+                // keep IDE happy
+            }
         }
 
         if ($persist) {
