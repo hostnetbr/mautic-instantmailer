@@ -153,7 +153,7 @@ class HostnetMailerIntegration extends AbstractIntegration
         // Override SwiftMailer spool handler
         copy(
             $this->pathsHelper->getSystemPath('plugins', true) . self::SPOOL,
-            $this->pathsHelper->getSystemPath('vendor', true) . self::SYSTEM_SPOOL
+            $this->pathsHelper->getSystemPath('vendor', true) . self::VENDOR_SPOOL
         );
     }
 
