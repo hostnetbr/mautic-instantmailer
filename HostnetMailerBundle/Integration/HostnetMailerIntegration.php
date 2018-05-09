@@ -55,7 +55,6 @@ class HostnetMailerIntegration extends AbstractIntegration
      */
     public function getRequiredKeyFields()
     {
-        die($this->pathsHelper->getSystemPath('vendor', true));
         return [
         ];
     }
