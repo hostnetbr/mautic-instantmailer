@@ -448,6 +448,7 @@ class MailHelper
             try {
                 $failures = [];
 
+                /* HostnetMailerBundle - Start */
                 $emailType = $this->email
                     ? $this->email->getEmailType()
                     : 'template';
@@ -455,6 +456,7 @@ class MailHelper
                 $this->mailer = $emailType === 'template'
                     ? (self::getSampleMailer())->mailer
                     : $this->mailer;
+                /* HostnetMailerBundle - End */
 
                 if (!$this->transport->isStarted()) {
                     $this->transportStartTime = time();

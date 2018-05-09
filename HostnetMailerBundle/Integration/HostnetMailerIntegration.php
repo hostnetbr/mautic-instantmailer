@@ -21,11 +21,11 @@ class HostnetMailerIntegration extends AbstractIntegration
 
     const SPOOL = '/HostnetMailerBundle/Helper/FileSpool.php';
     const DEFAULT_SPOOL = '/HostnetMailerBundle/Helper/DefaultFileSpool.php';
-    const VENDOR_SPOOL  = 'vendor/swiftmailer/swiftmailer/lib/classes/Swift/FileSpool.php';
+    const VENDOR_SPOOL  = '/swiftmailer/swiftmailer/lib/classes/Swift/FileSpool.php';
 
     const QUEUE = '/HostnetMailerBundle/Helper/ProcessEmailQueueCommand.php';
     const DEFAULT_QUEUE = '/HostnetMailerBundle/Helper/DefaultProcessEmailQueueCommand.php';
-    const SYSTEM_QUEUE  = 'bundles/EmailBundle/Command/ProcessEmailQueueCommand.php';
+    const SYSTEM_QUEUE  = '/bundles/EmailBundle/Command/ProcessEmailQueueCommand.php';
 
     public function getName()
     {
@@ -55,7 +55,7 @@ class HostnetMailerIntegration extends AbstractIntegration
      */
     public function getRequiredKeyFields()
     {
-        die($this->pathsHelper->getSystemPath());
+        die($this->pathsHelper->getSystemPath('vendor', true));
         return [
         ];
     }
@@ -118,17 +118,43 @@ class HostnetMailerIntegration extends AbstractIntegration
 
     public function restoreMailer()
     {
+        // Restore Mautic MailHelper
         copy(
             $this->pathsHelper->getSystemPath('plugins', true) . self::DEFAULT_MAILER,
             $this->pathsHelper->getSystemPath('app', true) . self::SYSTEM_MAILER
+        );
+
+        // Restore Mautic queue processor
+        copy(
+            $this->pathsHelper->getSystemPath('plugins', true) . self::DEFAULT_QUEUE,
+            $this->pathsHelper->getSystemPath('app', true) . self::SYSTEM_QUEUE
+        );
+
+        // Restore SwiftMailer spool handler
+        copy(
+            $this->pathsHelper->getSystemPath('plugins', true) . self::DEFAULT_SPOOL,
+            $this->pathsHelper->getSystemPath('vendor', true) . self::SYSTEM_SPOOL
         );
     }
 
     public function overrideMailer()
     {
+        // Override Mautic MailHelper
         copy(
             $this->pathsHelper->getSystemPath('plugins', true) . self::MAILER,
             $this->pathsHelper->getSystemPath('app', true) . self::SYSTEM_MAILER
+        );
+
+        // Override Mautic queue processor
+        copy(
+            $this->pathsHelper->getSystemPath('plugins', true) . self::QUEUE,
+            $this->pathsHelper->getSystemPath('app', true) . self::SYSTEM_QUEUE
+        );
+
+        // Override SwiftMailer spool handler
+        copy(
+            $this->pathsHelper->getSystemPath('plugins', true) . self::SPOOL,
+            $this->pathsHelper->getSystemPath('vendor', true) . self::SYSTEM_SPOOL
         );
     }
 
