@@ -19,6 +19,14 @@ class HostnetMailerIntegration extends AbstractIntegration
     const DEFAULT_MAILER = '/HostnetMailerBundle/Helper/DefaultMailHelper.php';
     const SYSTEM_MAILER = '/bundles/EmailBundle/Helper/MailHelper.php';
 
+    const SPOOL = '/HostnetMailerBundle/Helper/FileSpool.php';
+    const DEFAULT_SPOOL = '/HostnetMailerBundle/Helper/DefaultFileSpool.php';
+    const VENDOR_SPOOL  = 'vendor/swiftmailer/swiftmailer/lib/classes/Swift/FileSpool.php';
+
+    const QUEUE = '/HostnetMailerBundle/Helper/ProcessEmailQueueCommand.php';
+    const DEFAULT_QUEUE = '/HostnetMailerBundle/Helper/DefaultProcessEmailQueueCommand.php';
+    const SYSTEM_QUEUE  = 'bundles/EmailBundle/Command/ProcessEmailQueueCommand.php';
+
     public function getName()
     {
         return 'HostnetMailer';
@@ -47,6 +55,7 @@ class HostnetMailerIntegration extends AbstractIntegration
      */
     public function getRequiredKeyFields()
     {
+        die($this->pathsHelper->getSystemPath());
         return [
         ];
     }
