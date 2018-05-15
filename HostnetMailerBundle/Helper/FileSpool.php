@@ -167,7 +167,7 @@ class Swift_FileSpool extends Swift_ConfigurableSpool
                 $message = unserialize(file_get_contents($file.'.sending'));
 
                 /* HostnetMailerBundle - Start */
-                $date = new \DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo'));
+                $date = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
                 $message->setDate($date->getTimestamp());
                 /* HostnetMailerBundle - End */
 

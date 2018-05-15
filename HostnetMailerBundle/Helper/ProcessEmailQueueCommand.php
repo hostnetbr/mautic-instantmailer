@@ -106,7 +106,7 @@ EOT
                     $message = unserialize(file_get_contents($tmpFilename));
                     if ($message !== false && is_object($message) && get_class($message) === 'Swift_Message') {
                         /* HostnetMailerBundle - Start */
-                        $date = new \DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo'));
+                        $date = new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo'));
                         $message->setDate($date->getTimestamp());
                         /* HostnetMailerBundle - End */
 
