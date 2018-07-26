@@ -20,10 +20,5 @@ class HostnetMailerBundle extends PluginBundleBase
     */
     public static function onPluginUpdate(Plugin $plugin, MauticFactory $factory, $metadata = null, Schema $installedSchema = null)
     {
-        $integration = $plugin->getIntegrations()->first();
-
-        if ($integration->getIsPublished()) {
-            $integration->overrideMailer();
-        }
     }
 }
