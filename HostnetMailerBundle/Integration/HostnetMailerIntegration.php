@@ -27,6 +27,10 @@ class HostnetMailerIntegration extends AbstractIntegration
     const DEFAULT_QUEUE = '/HostnetMailerBundle/Helper/DefaultProcessEmailQueueCommand.php';
     const SYSTEM_QUEUE  = '/bundles/EmailBundle/Command/ProcessEmailQueueCommand.php';
 
+    const MODEL = '/HostnetMailerBundle/Helper/EmailModel.php';
+    const DEFAULT_MODEL = '/HostnetMailerBundle/Helper/DefaultEmailModel.php';
+    const SYSTEM_MODEL  = '/bundles/EmailBundle/Model/EmailModel.php';
+
     public function getName()
     {
         return 'HostnetMailer';
@@ -134,6 +138,12 @@ class HostnetMailerIntegration extends AbstractIntegration
             $this->pathsHelper->getSystemPath('plugins', true) . self::DEFAULT_SPOOL,
             $this->pathsHelper->getSystemPath('vendor', true) . self::VENDOR_SPOOL
         );
+
+        // Restore Mautic Email Model
+        copy(
+            $this->pathsHelper->getSystemPath('plugins', true) . self::DEFAULT_MODEL,
+            $this->pathsHelper->getSystemPath('app', true) . self::SYSTEM_MODEL
+        );
     }
 
     public function overrideMailer()
@@ -154,6 +164,12 @@ class HostnetMailerIntegration extends AbstractIntegration
         copy(
             $this->pathsHelper->getSystemPath('plugins', true) . self::SPOOL,
             $this->pathsHelper->getSystemPath('vendor', true) . self::VENDOR_SPOOL
+        );
+
+        // Override Mautic email model
+        copy(
+            $this->pathsHelper->getSystemPath('plugins', true) . self::MODEL,
+            $this->pathsHelper->getSystemPath('app', true) . self::SYSTEM_MODEL
         );
     }
 
