@@ -254,6 +254,11 @@ class MailHelper
     private $copies = [];
 
     /**
+     * @var array
+     */
+    private $embedImagesReplaces = [];
+
+    /**
      * @param MauticFactory $factory
      * @param               $mailer
      * @param null          $from
@@ -435,13 +440,15 @@ class MailHelper
             try {
 
                 /* HostnetMailerBundle - Start */
-                $emailType = $this->email
-                    ? $this->email->getEmailType()
-                    : 'template';
-
-                $this->mailer = $emailType === 'template'
-                    ? (self::getSampleMailer())->mailer
-                    : $this->mailer;
+                if($this->factory->getParameter('mailer_spool_type') == 'file'){
+                    $emailType = $this->email
+                        ? $this->email->getEmailType()
+                        : 'template';
+                    
+                    $this->mailer = $emailType === 'template'
+                        ? (self::getSampleMailer())->mailer
+                        : $this->mailer;                
+                }
                 /* HostnetMailerBundle - End */
 
                 if (!$this->transport->isStarted()) {
@@ -669,6 +676,7 @@ class MailHelper
         $this->fatal            = false;
         $this->idHashState      = true;
         $this->useGlobalFrom    = false;
+        $this->checkIfTransportNeedsRestart(true);
 
         $this->logger->clear();
 
@@ -812,7 +820,8 @@ class MailHelper
             // Stash attachment to be processed by the transport
             $this->message->addAttachment($filePath, $fileName, $contentType, $inline);
         } else {
-            if (file_exists($filePath) && is_readable($filePath)) {
+            // filePath can contain the value of a local file path or the value of an URL where the file can be found
+            if (filter_var($filePath, FILTER_VALIDATE_URL) || (file_exists($filePath) && is_readable($filePath))) {
                 try {
                     $attachment = \Swift_Attachment::fromPath($filePath);
 
@@ -958,21 +967,11 @@ class MailHelper
      * @param string $contentType
      * @param null   $charset
      * @param bool   $ignoreTrackingPixel
-     * @param bool   $ignoreEmbedImageConversion
      */
-    public function setBody($content, $contentType = 'text/html', $charset = null, $ignoreTrackingPixel = false, $ignoreEmbedImageConversion = false)
+    public function setBody($content, $contentType = 'text/html', $charset = null, $ignoreTrackingPixel = false)
     {
-        if (!$ignoreEmbedImageConversion && $this->factory->getParameter('mailer_convert_embed_images')) {
-            $matches = [];
-            if (preg_match_all('/<img.+?src=[\"\'](.+?)[\"\'].*?>/i', $content, $matches)) {
-                $replaces = [];
-                foreach ($matches[1] as $match) {
-                    if (strpos($match, 'cid:') === false) {
-                        $replaces[$match] = $this->message->embed(\Swift_Image::fromPath($match));
-                    }
-                }
-                $content = strtr($content, $replaces);
-            }
+        if (!$ignoreTrackingPixel && $this->factory->getParameter('mailer_convert_embed_images')) {
+            $content = $this->convertEmbedImages($content);
         }
 
         if (!$ignoreTrackingPixel && $this->factory->getParameter('mailer_append_tracking_pixel')) {
@@ -993,6 +992,27 @@ class MailHelper
             'contentType' => $contentType,
             'charset'     => $charset,
         ];
+    }
+
+    /**
+     * @param string $content
+     *
+     * @return string
+     */
+    private function convertEmbedImages($content)
+    {
+        $matches = [];
+        $content = strtr($content, $this->embedImagesReplaces);
+        if (preg_match_all('/<img.+?src=[\"\'](.+?)[\"\'].*?>/i', $content, $matches)) {
+            foreach ($matches[1] as $match) {
+                if (strpos($match, 'cid:') === false) {
+                    $this->embedImagesReplaces[$match] = $this->message->embed(\Swift_Image::fromPath($match));
+                }
+            }
+            $content = strtr($content, $this->embedImagesReplaces);
+        }
+
+        return $content;
     }
 
     /**
@@ -1025,9 +1045,17 @@ class MailHelper
      */
     public function setTo($addresses, $name = null)
     {
+        $name = $this->cleanName($name);
+
         if (!is_array($addresses)) {
-            $name      = $this->cleanName($name);
             $addresses = [$addresses => $name];
+        } elseif (array_keys($addresses)[0] === 0) {
+            // We need an array of $email => $name pairs
+            $addresses = array_reduce($addresses, function ($address, $item) use ($name) {
+                $address[$item] = $name;
+
+                return $address;
+            }, []);
         }
 
         $this->checkBatchMaxRecipients(count($addresses));
@@ -1482,8 +1510,10 @@ class MailHelper
         $listUnsubscribeHeader = $this->getUnsubscribeHeader();
         if ($listUnsubscribeHeader) {
             if (!empty($headers['List-Unsubscribe'])) {
-                // Ensure Mautic's is always part of this header
-                $headers['List-Unsubscribe'] .= ','.$listUnsubscribeHeader;
+                if (strpos($headers['List-Unsubscribe'], $listUnsubscribeHeader) === false) {
+                    // Ensure Mautic's is always part of this header
+                    $headers['List-Unsubscribe'] .= ','.$listUnsubscribeHeader;
+                }
             } else {
                 $headers['List-Unsubscribe'] = $listUnsubscribeHeader;
             }
@@ -1641,15 +1671,17 @@ class MailHelper
     protected function logError($error, $context = null)
     {
         if ($error instanceof \Exception) {
-            $errorMessage = $error->getMessage();
-            $error        = ('dev' === MAUTIC_ENV) ? (string) $error : $errorMessage;
+            $exceptionContext = ['exception' => $error];
+            $errorMessage     = $error->getMessage();
+            $error            = ('dev' === MAUTIC_ENV) ? (string) $error : $errorMessage;
 
             // Clean up the error message
             $errorMessage = trim(preg_replace('/(.*?)Log data:(.*)$/is', '$1', $errorMessage));
 
             $this->fatal = true;
         } else {
-            $errorMessage = trim($error);
+            $exceptionContext = [];
+            $errorMessage     = trim($error);
         }
 
         $logDump = $this->logger->dump();
@@ -1669,7 +1701,7 @@ class MailHelper
 
         $this->logger->clear();
 
-        $this->factory->getLogger()->log('error', '[MAIL ERROR] '.$error);
+        $this->factory->getLogger()->log('error', '[MAIL ERROR] '.$error, $exceptionContext);
     }
 
     /**
@@ -1886,7 +1918,8 @@ class MailHelper
             $copy        = $emailModel->getCopyRepository()->findByHash($hash);
             $copyCreated = false;
             if (null === $copy) {
-                if (!$emailModel->getCopyRepository()->saveCopy($hash, $this->subject, $this->body['content'])) {
+                $contentToPersist = strtr($this->body['content'], array_flip($this->embedImagesReplaces));
+                if (!$emailModel->getCopyRepository()->saveCopy($hash, $this->subject, $contentToPersist)) {
                     // Try one more time to find the ID in case there was overlap when creating
                     $copy = $emailModel->getCopyRepository()->findByHash($hash);
                 } else {
@@ -2128,6 +2161,11 @@ class MailHelper
                     $messageHeaders->addTextHeader($headerKey, $headerValue);
                 }
             }
+        }
+
+        if (array_key_exists('List-Unsubscribe', $headers)) {
+            unset($headers['List-Unsubscribe']);
+            $this->setCustomHeaders($headers, false);
         }
     }
 
